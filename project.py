@@ -12,9 +12,6 @@ import json
 from flask import make_response
 import requests
 
-##How can I set it up so that there is a LOG OUT link in upper
-##Right corner of the page??
-#Also, adding new menu item still does not work.
 app = Flask(__name__)
 
 CLIENT_ID = json.loads(
@@ -269,8 +266,8 @@ def restaurantMenuJSON(restaurant_id):
 
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/JSON')
 def menuItemJSON(restaurant_id, menu_id):
-    Menu_Item = session.query(MenuItem).filter_by(id=menu_id).one()
-    return jsonify(Menu_Item=Menu_Item.serialize)
+    menu_item = session.query(MenuItem).filter_by(id=menu_id).one()
+    return jsonify(Menu_Item=menu_item.serialize)
 
 
 @app.route('/restaurant/JSON')
@@ -294,8 +291,7 @@ def newRestaurant():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        newRestaurant = Restaurant(
-            name=request.form['name'], user_id=login_session['user_id'])
+        newRestaurant = Restaurant(name=request.form['name'], user_id=login_session['user_id'])
         session.add(newRestaurant)
         flash('New Restaurant %s Successfully Created' % newRestaurant.name)
         session.commit()
@@ -363,17 +359,17 @@ def newMenuItem(restaurant_id):
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     if login_session['user_id'] != restaurant.user_id:
         return "<script>function myFunction() {alert('You are not authorized to add menu items to this restaurant. Please create your own restaurant in order to add items.');}</script><body onload='myFunction()''>"
-        if request.method == 'POST':
-            newItem = MenuItem(name=request.form['name'],
-                description=request.form['description'],
-                price=request.form['price'],
-                course=request.form['course'],
-                restaurant_id=restaurant_id,
-                user_id=restaurant.user_id)
-            session.add(newItem)
-            session.commit()
-            flash('New Menu %s Item Successfully Created' % (newItem.name))
-            return redirect(url_for('showMenu', restaurant_id=restaurant_id))
+    if request.method == 'POST':
+        newItem = MenuItem(name=request.form['name'],
+            description=request.form['description'],
+            price=request.form['price'],
+            course=request.form['course'],
+            restaurant_id=restaurant_id,
+            user_id=restaurant.user_id)
+        session.add(newItem)
+        session.commit()
+        flash('New Menu %s Item Successfully Created' % (newItem.name))
+        return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
         return render_template('newmenuitem.html', restaurant_id=restaurant_id)
 
@@ -420,7 +416,7 @@ def deleteMenuItem(restaurant_id, menu_id):
         flash('Menu Item Successfully Deleted')
         return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
-        return render_template('deleteMenuItem.html', item=itemToDelete)
+        return render_template('deletemenuitem.html', item=itemToDelete)
 
 
 # Disconnect based on provider
@@ -448,5 +444,6 @@ def disconnect():
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
+    # Turn of Debug when using on Project 5
     app.debug = True
     app.run(host='0.0.0.0', port=5000)
