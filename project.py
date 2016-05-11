@@ -13,7 +13,7 @@ from flask import make_response
 import requests
 import os
 
-root_path = os.getcwd()
+root_path = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 
